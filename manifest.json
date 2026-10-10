@@ -1,0 +1,10 @@
+{
+  "name": "N4 Kanji Flashcards",
+  "short_name": "N4 Kanji",
+  "description": "JLPT N4 Kanji Flashcards - Fully offline",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any"
+}
