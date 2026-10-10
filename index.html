@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>N4 Kanji Flashcards</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header" id="header">
+      <div class="header-left">
+        <h1>N4 Kanji</h1>
+        <span class="progress-text" id="progressText">0 / 0</span>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" id="resetBtn" title="Reset progress">↺</button>
+      </div>
+    </header>
+
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <!-- Main Study Area -->
+    <main class="main" id="main">
+      <div class="card-container" id="cardContainer">
+        <div class="flashcard" id="flashcard">
+          <div class="card-face card-front">
+            <div class="kanji" id="kanjiChar">漢</div>
+          </div>
+          <div class="card-face card-back">
+            <div class="back-content">
+              <div class="reading-group">
+                <span class="label">音読み</span>
+                <span class="reading" id="onyomi">—</span>
+              </div>
+              <div class="reading-group">
+                <span class="label">訓読み</span>
+                <span class="reading" id="kunyomi">—</span>
+              </div>
+              <div class="meaning" id="meaning">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Swipe hints (portrait only) -->
+      <div class="swipe-hints" id="swipeHints">
+        <div class="hint left">← Don't know</div>
+        <div class="hint right">Knew →</div>
+      </div>
+
+      <!-- Action buttons (portrait) -->
+      <div class="actions" id="actions">
+        <button class="action-btn dont-know" id="dontKnowBtn">
+          <span class="btn-icon">✕</span>
+          <span class="btn-label">Don't Know</span>
+        </button>
+        <button class="action-btn flip-btn" id="flipBtn">Flip</button>
+        <button class="action-btn knew" id="knewBtn">
+          <span class="btn-icon">✓</span>
+          <span class="btn-label">Knew</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- Tabs -->
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="study">
+        <span class="tab-icon">🎴</span>
+        <span class="tab-label">Study</span>
+      </button>
+      <button class="tab" data-tab="knew">
+        <span class="tab-icon">✓</span>
+        <span class="tab-label">Knew</span>
+        <span class="badge" id="knewBadge">0</span>
+      </button>
+      <button class="tab" data-tab="dontknow">
+        <span class="tab-icon">✕</span>
+        <span class="tab-label">Don't Know</span>
+        <span class="badge" id="dontKnowBadge">0</span>
+      </button>
+    </nav>
+
+    <!-- List Views -->
+    <section class="list-view hidden" id="knewView">
+      <div class="list-header">
+        <h2>Knew Kanji</h2>
+        <button class="clear-btn" data-clear="knew">Clear All</button>
+      </div>
+      <div class="kanji-grid" id="knewGrid"></div>
+      <div class="empty-state" id="knewEmpty">No kanji marked as known yet.<br>Swipe right on cards you know!</div>
+    </section>
+
+    <section class="list-view hidden" id="dontknowView">
+      <div class="list-header">
+        <h2>Don't Know</h2>
+        <button class="clear-btn" data-clear="dontknow">Clear All</button>
+      </div>
+      <div class="kanji-grid" id="dontKnowGrid"></div>
+      <div class="empty-state" id="dontKnowEmpty">No kanji marked as unknown yet.<br>Swipe left on cards you don't know.</div>
+    </section>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
