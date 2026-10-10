@@ -24,7 +24,7 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
   background: var(--bg);
   color: var(--text);
   overscroll-behavior: none;
@@ -175,7 +175,7 @@ html, body {
 }
 
 .main-text {
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
   font-weight: 900;
   font-size: clamp(4.5rem, 22vw, 7.5rem);
   line-height: 1.1;
@@ -217,7 +217,7 @@ html, body {
 }
 
 .reading {
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--accent);
@@ -238,7 +238,7 @@ html, body {
 }
 
 .parent-kanji span {
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--accent);
