@@ -14,7 +14,6 @@
 </head>
 <body>
   <div id="app">
-    <!-- Header -->
     <header class="header" id="header">
       <div class="header-left">
         <h1 id="headerTitle">N4</h1>
@@ -25,12 +24,10 @@
       </div>
     </header>
 
-    <!-- Progress bar -->
     <div class="progress-bar" id="progressBar">
       <div class="progress-fill" id="progressFill"></div>
     </div>
 
-    <!-- Main Study / Review Area -->
     <main class="main" id="main">
       <div class="card-container" id="cardContainer">
         <div class="flashcard" id="flashcard">
@@ -48,19 +45,18 @@
                 <span class="reading" id="kunyomi">—</span>
               </div>
               <div class="meaning" id="meaning">—</div>
+              <div class="examples" id="examples"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Action buttons (icon only) -->
       <div class="actions" id="actions">
         <button class="action-btn dont-know" id="dontKnowBtn" title="Don't Know">✕</button>
         <button class="action-btn flip-btn" id="flipBtn" title="Flip">⟳</button>
         <button class="action-btn knew" id="knewBtn" title="Knew">✓</button>
       </div>
 
-      <!-- Review mode controls -->
       <div class="review-controls hidden" id="reviewControls">
         <button class="action-btn review-prev" id="prevBtn" title="Previous">‹</button>
         <button class="action-btn flip-btn" id="reviewFlipBtn" title="Flip">⟳</button>
@@ -69,13 +65,11 @@
       </div>
     </main>
 
-    <!-- Empty state for review tabs -->
     <div class="empty-state-full hidden" id="emptyState">
       <div class="empty-icon" id="emptyIcon">✓</div>
       <p id="emptyText">No cards yet</p>
     </div>
 
-    <!-- Tabs -->
     <nav class="tabs" id="tabs">
       <button class="tab active" data-tab="study" title="Study">
         <span class="tab-icon">🎴</span>

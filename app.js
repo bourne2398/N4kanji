@@ -113,6 +113,22 @@ class KanjiApp {
     this.kunyomiEl.textContent = card.kunyomi === '—' ? '—' : card.kunyomi;
     this.meaningEl.textContent = card.english;
 
+    // Render examples
+    const examplesEl = document.getElementById('examples');
+    if (examplesEl) {
+      if (card.examples && card.examples.length) {
+        examplesEl.innerHTML = card.examples.map(ex => `
+          <div class="example-item">
+            <span class="example-word">${ex.word}</span>
+            <span class="example-reading">${ex.reading}</span>
+            <span class="example-meaning">${ex.meaning}</span>
+          </div>
+        `).join('');
+      } else {
+        examplesEl.innerHTML = '';
+      }
+    }
+
     this.flashcard.classList.remove('flipped', 'slide-left', 'slide-right');
     this.flashcard.style.transform = '';
     this.flashcard.style.transition = '';
@@ -256,7 +272,6 @@ class KanjiApp {
       tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
     });
 
-    // Touch swipe
     const card = this.flashcard;
 
     card.addEventListener('touchstart', (e) => {
