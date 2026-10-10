@@ -17,11 +17,11 @@
     <!-- Header -->
     <header class="header" id="header">
       <div class="header-left">
-        <h1>N4 Kanji</h1>
-        <span class="progress-text" id="progressText">0 / 0</span>
+        <h1>N4</h1>
+        <span class="progress-text" id="progressText">0/0</span>
       </div>
       <div class="header-right">
-        <button class="icon-btn" id="resetBtn" title="Reset progress">↺</button>
+        <button class="icon-btn" id="resetBtn" title="Reset">↺</button>
       </div>
     </header>
 
@@ -40,11 +40,11 @@
           <div class="card-face card-back">
             <div class="back-content">
               <div class="reading-group">
-                <span class="label">音読み</span>
+                <span class="label">音</span>
                 <span class="reading" id="onyomi">—</span>
               </div>
               <div class="reading-group">
-                <span class="label">訓読み</span>
+                <span class="label">訓</span>
                 <span class="reading" id="kunyomi">—</span>
               </div>
               <div class="meaning" id="meaning">—</div>
@@ -53,40 +53,25 @@
         </div>
       </div>
 
-      <!-- Swipe hints (portrait only) -->
-      <div class="swipe-hints" id="swipeHints">
-        <div class="hint left">← Don't know</div>
-        <div class="hint right">Knew →</div>
-      </div>
-
-      <!-- Action buttons (portrait) -->
+      <!-- Action buttons (icon only) -->
       <div class="actions" id="actions">
-        <button class="action-btn dont-know" id="dontKnowBtn">
-          <span class="btn-icon">✕</span>
-          <span class="btn-label">Don't Know</span>
-        </button>
-        <button class="action-btn flip-btn" id="flipBtn">Flip</button>
-        <button class="action-btn knew" id="knewBtn">
-          <span class="btn-icon">✓</span>
-          <span class="btn-label">Knew</span>
-        </button>
+        <button class="action-btn dont-know" id="dontKnowBtn" title="Don't Know">✕</button>
+        <button class="action-btn flip-btn" id="flipBtn" title="Flip">⟳</button>
+        <button class="action-btn knew" id="knewBtn" title="Knew">✓</button>
       </div>
     </main>
 
-    <!-- Tabs -->
+    <!-- Tabs (icon only) -->
     <nav class="tabs" id="tabs">
-      <button class="tab active" data-tab="study">
+      <button class="tab active" data-tab="study" title="Study">
         <span class="tab-icon">🎴</span>
-        <span class="tab-label">Study</span>
       </button>
-      <button class="tab" data-tab="knew">
+      <button class="tab" data-tab="knew" title="Knew">
         <span class="tab-icon">✓</span>
-        <span class="tab-label">Knew</span>
         <span class="badge" id="knewBadge">0</span>
       </button>
-      <button class="tab" data-tab="dontknow">
+      <button class="tab" data-tab="dontknow" title="Don't Know">
         <span class="tab-icon">✕</span>
-        <span class="tab-label">Don't Know</span>
         <span class="badge" id="dontKnowBadge">0</span>
       </button>
     </nav>
@@ -94,20 +79,20 @@
     <!-- List Views -->
     <section class="list-view hidden" id="knewView">
       <div class="list-header">
-        <h2>Knew Kanji</h2>
-        <button class="clear-btn" data-clear="knew">Clear All</button>
+        <h2>✓ Knew</h2>
+        <button class="clear-btn" data-clear="knew" title="Clear">🗑</button>
       </div>
       <div class="kanji-grid" id="knewGrid"></div>
-      <div class="empty-state" id="knewEmpty">No kanji marked as known yet.<br>Swipe right on cards you know!</div>
+      <div class="empty-state" id="knewEmpty">Swipe right on cards you know</div>
     </section>
 
     <section class="list-view hidden" id="dontknowView">
       <div class="list-header">
-        <h2>Don't Know</h2>
-        <button class="clear-btn" data-clear="dontknow">Clear All</button>
+        <h2>✕ Don't Know</h2>
+        <button class="clear-btn" data-clear="dontknow" title="Clear">🗑</button>
       </div>
       <div class="kanji-grid" id="dontKnowGrid"></div>
-      <div class="empty-state" id="dontKnowEmpty">No kanji marked as unknown yet.<br>Swipe left on cards you don't know.</div>
+      <div class="empty-state" id="dontKnowEmpty">Swipe left on cards you don't know</div>
     </section>
   </div>
 

@@ -14,6 +14,7 @@ class KanjiApp {
     this.startX = 0;
     this.currentX = 0;
     this.startY = 0;
+    this.currentTab = 'study';
 
     this.cacheDOM();
     this.loadProgress();
@@ -65,9 +66,10 @@ class KanjiApp {
   }
 
   buildDeck() {
-    this.deck = this.allKanji.filter(k => 
+    this.deck = this.allKanji.filter(k =>
       !this.knew.has(k.kanji) && !this.dontKnow.has(k.kanji)
     );
+    // Shuffle
     for (let i = this.deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
@@ -83,9 +85,9 @@ class KanjiApp {
     const card = this.currentCard;
     if (!card) {
       this.kanjiChar.textContent = '完';
-      this.onyomiEl.textContent = 'All done!';
+      this.onyomiEl.textContent = 'Done!';
       this.kunyomiEl.textContent = '';
-      this.meaningEl.textContent = 'Great job! Reset to study again.';
+      this.meaningEl.textContent = 'Reset to study again';
       this.flashcard.classList.remove('flipped');
       this.isFlipped = false;
       return;
@@ -112,16 +114,20 @@ class KanjiApp {
     const card = this.currentCard;
     if (!card) return;
 
+    const kanji = card.kanji;
+
     if (isKnew) {
-      this.knew.add(card.kanji);
-      this.dontKnow.delete(card.kanji);
+      this.knew.add(kanji);
+      this.dontKnow.delete(kanji);
     } else {
-      this.dontKnow.add(card.kanji);
-      this.knew.delete(card.kanji);
+      this.dontKnow.add(kanji);
+      this.knew.delete(kanji);
     }
 
     this.saveProgress();
+    this.updateUI(); // Update badges + lists immediately
 
+    // Animate out
     const direction = isKnew ? 'slide-right' : 'slide-left';
     this.flashcard.classList.add(direction);
 
@@ -131,20 +137,20 @@ class KanjiApp {
         this.buildDeck();
       }
       this.showCard();
-      this.updateUI();
-    }, 320);
+    }, 300);
   }
 
   updateUI() {
     const total = this.allKanji.length;
     const done = this.knew.size + this.dontKnow.size;
 
-    this.progressText.textContent = `${done} / ${total}`;
+    this.progressText.textContent = `${done}/${total}`;
     this.progressFill.style.width = `${(done / total) * 100}%`;
 
     this.knewBadge.textContent = this.knew.size;
     this.dontKnowBadge.textContent = this.dontKnow.size;
 
+    // Always re-render both lists
     this.renderList('knew');
     this.renderList('dontknow');
   }
@@ -154,18 +160,24 @@ class KanjiApp {
     const grid = type === 'knew' ? this.knewGrid : this.dontKnowGrid;
     const empty = type === 'knew' ? this.knewEmpty : this.dontKnowEmpty;
 
+    if (!grid || !empty) return;
+
     grid.innerHTML = '';
+
     if (set.size === 0) {
       empty.classList.add('show');
       return;
     }
+
     empty.classList.remove('show');
 
-    [...set].sort().forEach(k => {
+    // Sort and render
+    const sorted = [...set].sort((a, b) => a.localeCompare(b, 'ja'));
+    sorted.forEach(k => {
       const item = document.createElement('div');
       item.className = 'kanji-item';
       item.textContent = k;
-      item.title = 'Tap to move back to study';
+      item.title = 'Tap to return to study';
       item.addEventListener('click', () => {
         this.knew.delete(k);
         this.dontKnow.delete(k);
@@ -179,25 +191,43 @@ class KanjiApp {
   }
 
   switchTab(tabName) {
-    this.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+    this.currentTab = tabName;
 
-    this.main.style.display = tabName === 'study' ? 'flex' : 'none';
-    this.knewView.classList.toggle('hidden', tabName !== 'knew');
-    this.dontknowView.classList.toggle('hidden', tabName !== 'dontknow');
+    this.tabs.forEach(t => {
+      t.classList.toggle('active', t.dataset.tab === tabName);
+    });
+
+    if (tabName === 'study') {
+      this.main.style.display = 'flex';
+      this.knewView.classList.add('hidden');
+      this.dontknowView.classList.add('hidden');
+    } else if (tabName === 'knew') {
+      this.main.style.display = 'none';
+      this.knewView.classList.remove('hidden');
+      this.dontknowView.classList.add('hidden');
+      this.renderList('knew'); // Force re-render when opening tab
+    } else if (tabName === 'dontknow') {
+      this.main.style.display = 'none';
+      this.knewView.classList.add('hidden');
+      this.dontknowView.classList.remove('hidden');
+      this.renderList('dontknow'); // Force re-render when opening tab
+    }
   }
 
   bindEvents() {
-    this.flashcard.addEventListener('click', (e) => {
+    // Flip on tap
+    this.flashcard.addEventListener('click', () => {
       if (this.isDragging) return;
       this.flipCard();
     });
 
+    // Icon buttons
     document.getElementById('flipBtn').addEventListener('click', () => this.flipCard());
     document.getElementById('knewBtn').addEventListener('click', () => this.markCard(true));
     document.getElementById('dontKnowBtn').addEventListener('click', () => this.markCard(false));
 
     document.getElementById('resetBtn').addEventListener('click', () => {
-      if (confirm('Reset all progress? This cannot be undone.')) {
+      if (confirm('Reset all progress?')) {
         this.knew.clear();
         this.dontKnow.clear();
         this.saveProgress();
@@ -207,14 +237,16 @@ class KanjiApp {
       }
     });
 
+    // Tabs
     this.tabs.forEach(tab => {
       tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
     });
 
+    // Clear buttons
     document.querySelectorAll('.clear-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const type = btn.dataset.clear;
-        if (confirm(`Clear all ${type === 'knew' ? 'Knew' : "Don't Know"} kanji?`)) {
+        if (confirm(`Clear all?`)) {
           if (type === 'knew') this.knew.clear();
           else this.dontKnow.clear();
           this.saveProgress();
@@ -225,7 +257,7 @@ class KanjiApp {
       });
     });
 
-    // Touch Swipe that follows finger
+    // ===== Touch Swipe (follows finger) =====
     const card = this.flashcard;
 
     card.addEventListener('touchstart', (e) => {
@@ -242,20 +274,20 @@ class KanjiApp {
       const deltaX = e.touches[0].clientX - this.startX;
       const deltaY = e.touches[0].clientY - this.startY;
 
-      if (!this.isDragging && Math.abs(deltaX) > 12 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      if (!this.isDragging && Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
         this.isDragging = true;
       }
 
       if (this.isDragging) {
         e.preventDefault();
         this.currentX = deltaX;
-        const rotate = deltaX * 0.08;
+        const rotate = deltaX * 0.07;
         card.style.transform = `translateX(${deltaX}px) rotate(${rotate}deg)`;
 
-        if (deltaX > 40) {
-          card.style.boxShadow = '0 0 30px rgba(34, 197, 94, 0.4)';
-        } else if (deltaX < -40) {
-          card.style.boxShadow = '0 0 30px rgba(239, 68, 68, 0.4)';
+        if (deltaX > 35) {
+          card.style.boxShadow = '0 0 28px rgba(34, 197, 94, 0.45)';
+        } else if (deltaX < -35) {
+          card.style.boxShadow = '0 0 28px rgba(239, 68, 68, 0.45)';
         } else {
           card.style.boxShadow = '';
         }
@@ -268,10 +300,10 @@ class KanjiApp {
         return;
       }
 
-      card.style.transition = 'transform 0.3s ease, box-shadow 0.3s';
+      card.style.transition = 'transform 0.28s ease, box-shadow 0.28s';
       card.style.boxShadow = '';
 
-      const threshold = 90;
+      const threshold = 80;
 
       if (this.currentX > threshold) {
         this.markCard(true);
@@ -283,10 +315,10 @@ class KanjiApp {
 
       setTimeout(() => {
         this.isDragging = false;
-      }, 50);
+      }, 40);
     });
 
-    // Mouse support
+    // Mouse support (desktop testing)
     let mouseDown = false;
     card.addEventListener('mousedown', (e) => {
       mouseDown = true;
@@ -299,10 +331,10 @@ class KanjiApp {
     window.addEventListener('mousemove', (e) => {
       if (!mouseDown) return;
       const deltaX = e.clientX - this.startX;
-      if (Math.abs(deltaX) > 10) this.isDragging = true;
+      if (Math.abs(deltaX) > 8) this.isDragging = true;
       if (this.isDragging) {
         this.currentX = deltaX;
-        const rotate = deltaX * 0.08;
+        const rotate = deltaX * 0.07;
         card.style.transform = `translateX(${deltaX}px) rotate(${rotate}deg)`;
       }
     });
@@ -310,13 +342,13 @@ class KanjiApp {
     window.addEventListener('mouseup', () => {
       if (!mouseDown) return;
       mouseDown = false;
-      card.style.transition = 'transform 0.3s ease';
+      card.style.transition = 'transform 0.28s ease';
 
-      if (this.currentX > 90) this.markCard(true);
-      else if (this.currentX < -90) this.markCard(false);
+      if (this.currentX > 80) this.markCard(true);
+      else if (this.currentX < -80) this.markCard(false);
       else card.style.transform = '';
 
-      setTimeout(() => { this.isDragging = false; }, 50);
+      setTimeout(() => { this.isDragging = false; }, 40);
     });
   }
 }
