@@ -1,4 +1,4 @@
-const CACHE_NAME = 'n4-kanji-offline-v5';
+const CACHE_NAME = 'n4-kanji-offline-v6';
 const APP_SHELL = [
   './',
   './index.html',
@@ -6,7 +6,8 @@ const APP_SHELL = [
   './app.js',
   './data.js',
   './manifest.json',
-  './icon-192.png'
+  './icon-192.png',
+  './icon-512.svg'
 ];
 
 // Install the app shell. Cache assets individually so one optional/missing
