@@ -13,8 +13,9 @@ class KanjiApp {
     this.isDragging = false;
     this.startX = 0;
     this.currentX = 0;
-    this.startY = 0;
     this.currentTab = 'study';
+    this.reviewList = [];
+    this.reviewIndex = 0;
 
     this.cacheDOM();
     this.loadProgress();
@@ -32,15 +33,15 @@ class KanjiApp {
     this.meaningEl = document.getElementById('meaning');
     this.progressText = document.getElementById('progressText');
     this.progressFill = document.getElementById('progressFill');
+    this.headerTitle = document.getElementById('headerTitle');
     this.knewBadge = document.getElementById('knewBadge');
     this.dontKnowBadge = document.getElementById('dontKnowBadge');
-    this.knewGrid = document.getElementById('knewGrid');
-    this.dontKnowGrid = document.getElementById('dontKnowGrid');
-    this.knewEmpty = document.getElementById('knewEmpty');
-    this.dontKnowEmpty = document.getElementById('dontKnowEmpty');
     this.main = document.getElementById('main');
-    this.knewView = document.getElementById('knewView');
-    this.dontknowView = document.getElementById('dontknowView');
+    this.actions = document.getElementById('actions');
+    this.reviewControls = document.getElementById('reviewControls');
+    this.emptyState = document.getElementById('emptyState');
+    this.emptyIcon = document.getElementById('emptyIcon');
+    this.emptyText = document.getElementById('emptyText');
     this.tabs = document.querySelectorAll('.tab');
   }
 
@@ -52,24 +53,20 @@ class KanjiApp {
         this.knew = new Set(data.knew || []);
         this.dontKnow = new Set(data.dontKnow || []);
       }
-    } catch (e) {
-      console.warn('Could not load progress', e);
-    }
+    } catch (e) {}
   }
 
   saveProgress() {
-    const data = {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
       knew: [...this.knew],
       dontKnow: [...this.dontKnow]
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }));
   }
 
   buildDeck() {
     this.deck = this.allKanji.filter(k =>
       !this.knew.has(k.kanji) && !this.dontKnow.has(k.kanji)
     );
-    // Shuffle
     for (let i = this.deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
@@ -77,21 +74,39 @@ class KanjiApp {
     this.currentIndex = 0;
   }
 
-  get currentCard() {
-    return this.deck[this.currentIndex] || null;
+  getCurrentCard() {
+    if (this.currentTab === 'study') {
+      return this.deck[this.currentIndex] || null;
+    }
+    return this.reviewList[this.reviewIndex] || null;
   }
 
   showCard() {
-    const card = this.currentCard;
+    const card = this.getCurrentCard();
+
     if (!card) {
-      this.kanjiChar.textContent = '完';
-      this.onyomiEl.textContent = 'Done!';
-      this.kunyomiEl.textContent = '';
-      this.meaningEl.textContent = 'Reset to study again';
+      if (this.currentTab === 'study') {
+        this.main.classList.remove('hidden');
+        this.emptyState.classList.add('hidden');
+        this.kanjiChar.textContent = '完';
+        this.onyomiEl.textContent = 'Done!';
+        this.kunyomiEl.textContent = '';
+        this.meaningEl.textContent = 'Reset to study again';
+      } else {
+        this.main.classList.add('hidden');
+        this.emptyState.classList.remove('hidden');
+        this.emptyIcon.textContent = this.currentTab === 'knew' ? '✓' : '✕';
+        this.emptyText.textContent = this.currentTab === 'knew'
+          ? 'No cards yet — swipe right on cards you know'
+          : 'No cards yet — swipe left on cards you don\'t know';
+      }
       this.flashcard.classList.remove('flipped');
       this.isFlipped = false;
       return;
     }
+
+    this.main.classList.remove('hidden');
+    this.emptyState.classList.add('hidden');
 
     this.kanjiChar.textContent = card.kanji;
     this.onyomiEl.textContent = card.onyomi;
@@ -105,126 +120,127 @@ class KanjiApp {
   }
 
   flipCard() {
-    if (!this.currentCard) return;
+    if (!this.getCurrentCard()) return;
     this.isFlipped = !this.isFlipped;
     this.flashcard.classList.toggle('flipped', this.isFlipped);
   }
 
   markCard(isKnew) {
-    const card = this.currentCard;
+    if (this.currentTab !== 'study') return;
+    const card = this.getCurrentCard();
     if (!card) return;
 
-    const kanji = card.kanji;
-
+    const k = card.kanji;
     if (isKnew) {
-      this.knew.add(kanji);
-      this.dontKnow.delete(kanji);
+      this.knew.add(k);
+      this.dontKnow.delete(k);
     } else {
-      this.dontKnow.add(kanji);
-      this.knew.delete(kanji);
+      this.dontKnow.add(k);
+      this.knew.delete(k);
     }
-
     this.saveProgress();
-    this.updateUI(); // Update badges + lists immediately
+    this.updateUI();
 
-    // Animate out
-    const direction = isKnew ? 'slide-right' : 'slide-left';
-    this.flashcard.classList.add(direction);
-
+    this.flashcard.classList.add(isKnew ? 'slide-right' : 'slide-left');
     setTimeout(() => {
       this.currentIndex++;
-      if (this.currentIndex >= this.deck.length) {
-        this.buildDeck();
-      }
+      if (this.currentIndex >= this.deck.length) this.buildDeck();
       this.showCard();
     }, 300);
   }
 
-  updateUI() {
-    const total = this.allKanji.length;
-    const done = this.knew.size + this.dontKnow.size;
-
-    this.progressText.textContent = `${done}/${total}`;
-    this.progressFill.style.width = `${(done / total) * 100}%`;
-
-    this.knewBadge.textContent = this.knew.size;
-    this.dontKnowBadge.textContent = this.dontKnow.size;
-
-    // Always re-render both lists
-    this.renderList('knew');
-    this.renderList('dontknow');
+  reviewNext() {
+    if (this.reviewList.length === 0) return;
+    this.reviewIndex = (this.reviewIndex + 1) % this.reviewList.length;
+    this.showCard();
+    this.updateProgressText();
   }
 
-  renderList(type) {
-    const set = type === 'knew' ? this.knew : this.dontKnow;
-    const grid = type === 'knew' ? this.knewGrid : this.dontKnowGrid;
-    const empty = type === 'knew' ? this.knewEmpty : this.dontKnowEmpty;
+  reviewPrev() {
+    if (this.reviewList.length === 0) return;
+    this.reviewIndex = (this.reviewIndex - 1 + this.reviewList.length) % this.reviewList.length;
+    this.showCard();
+    this.updateProgressText();
+  }
 
-    if (!grid || !empty) return;
+  removeFromReview() {
+    const card = this.getCurrentCard();
+    if (!card) return;
 
-    grid.innerHTML = '';
+    if (this.currentTab === 'knew') this.knew.delete(card.kanji);
+    else this.dontKnow.delete(card.kanji);
 
-    if (set.size === 0) {
-      empty.classList.add('show');
-      return;
+    this.saveProgress();
+    this.buildReviewList();
+    this.updateUI();
+
+    if (this.reviewList.length === 0) {
+      this.showCard();
+    } else {
+      if (this.reviewIndex >= this.reviewList.length) this.reviewIndex = 0;
+      this.showCard();
     }
+  }
 
-    empty.classList.remove('show');
+  buildReviewList() {
+    const set = this.currentTab === 'knew' ? this.knew : this.dontKnow;
+    this.reviewList = this.allKanji.filter(k => set.has(k.kanji));
+    if (this.reviewIndex >= this.reviewList.length) this.reviewIndex = 0;
+  }
 
-    // Sort and render
-    const sorted = [...set].sort((a, b) => a.localeCompare(b, 'ja'));
-    sorted.forEach(k => {
-      const item = document.createElement('div');
-      item.className = 'kanji-item';
-      item.textContent = k;
-      item.title = 'Tap to return to study';
-      item.addEventListener('click', () => {
-        this.knew.delete(k);
-        this.dontKnow.delete(k);
-        this.saveProgress();
-        this.buildDeck();
-        this.showCard();
-        this.updateUI();
-      });
-      grid.appendChild(item);
-    });
+  updateProgressText() {
+    if (this.currentTab === 'study') {
+      const done = this.knew.size + this.dontKnow.size;
+      this.progressText.textContent = `${done}/${this.allKanji.length}`;
+      this.progressFill.style.width = `${(done / this.allKanji.length) * 100}%`;
+    } else {
+      const total = this.reviewList.length;
+      const pos = total === 0 ? 0 : this.reviewIndex + 1;
+      this.progressText.textContent = `${pos}/${total}`;
+      this.progressFill.style.width = total ? `${(pos / total) * 100}%` : '0%';
+    }
+  }
+
+  updateUI() {
+    this.knewBadge.textContent = this.knew.size;
+    this.dontKnowBadge.textContent = this.dontKnow.size;
+    this.updateProgressText();
   }
 
   switchTab(tabName) {
     this.currentTab = tabName;
-
-    this.tabs.forEach(t => {
-      t.classList.toggle('active', t.dataset.tab === tabName);
-    });
+    this.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
 
     if (tabName === 'study') {
-      this.main.style.display = 'flex';
-      this.knewView.classList.add('hidden');
-      this.dontknowView.classList.add('hidden');
-    } else if (tabName === 'knew') {
-      this.main.style.display = 'none';
-      this.knewView.classList.remove('hidden');
-      this.dontknowView.classList.add('hidden');
-      this.renderList('knew'); // Force re-render when opening tab
-    } else if (tabName === 'dontknow') {
-      this.main.style.display = 'none';
-      this.knewView.classList.add('hidden');
-      this.dontknowView.classList.remove('hidden');
-      this.renderList('dontknow'); // Force re-render when opening tab
+      this.headerTitle.textContent = 'N4';
+      this.actions.classList.remove('hidden');
+      this.reviewControls.classList.add('hidden');
+      this.buildDeck();
+      this.showCard();
+    } else {
+      this.headerTitle.textContent = tabName === 'knew' ? '✓ Knew' : '✕ Don\'t Know';
+      this.actions.classList.add('hidden');
+      this.reviewControls.classList.remove('hidden');
+      this.buildReviewList();
+      this.reviewIndex = 0;
+      this.showCard();
     }
+    this.updateUI();
   }
 
   bindEvents() {
-    // Flip on tap
     this.flashcard.addEventListener('click', () => {
       if (this.isDragging) return;
       this.flipCard();
     });
 
-    // Icon buttons
     document.getElementById('flipBtn').addEventListener('click', () => this.flipCard());
+    document.getElementById('reviewFlipBtn').addEventListener('click', () => this.flipCard());
     document.getElementById('knewBtn').addEventListener('click', () => this.markCard(true));
     document.getElementById('dontKnowBtn').addEventListener('click', () => this.markCard(false));
+    document.getElementById('nextBtn').addEventListener('click', () => this.reviewNext());
+    document.getElementById('prevBtn').addEventListener('click', () => this.reviewPrev());
+    document.getElementById('removeBtn').addEventListener('click', () => this.removeFromReview());
 
     document.getElementById('resetBtn').addEventListener('click', () => {
       if (confirm('Reset all progress?')) {
@@ -232,39 +248,21 @@ class KanjiApp {
         this.dontKnow.clear();
         this.saveProgress();
         this.buildDeck();
-        this.showCard();
-        this.updateUI();
+        this.switchTab('study');
       }
     });
 
-    // Tabs
     this.tabs.forEach(tab => {
       tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
     });
 
-    // Clear buttons
-    document.querySelectorAll('.clear-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const type = btn.dataset.clear;
-        if (confirm(`Clear all?`)) {
-          if (type === 'knew') this.knew.clear();
-          else this.dontKnow.clear();
-          this.saveProgress();
-          this.buildDeck();
-          this.showCard();
-          this.updateUI();
-        }
-      });
-    });
-
-    // ===== Touch Swipe (follows finger) =====
+    // Touch swipe
     const card = this.flashcard;
 
     card.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return;
       this.isDragging = false;
       this.startX = e.touches[0].clientX;
-      this.startY = e.touches[0].clientY;
       this.currentX = 0;
       card.style.transition = 'none';
     }, { passive: true });
@@ -272,24 +270,20 @@ class KanjiApp {
     card.addEventListener('touchmove', (e) => {
       if (e.touches.length !== 1) return;
       const deltaX = e.touches[0].clientX - this.startX;
-      const deltaY = e.touches[0].clientY - this.startY;
 
-      if (!this.isDragging && Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+      if (!this.isDragging && Math.abs(deltaX) > 12) {
         this.isDragging = true;
       }
 
       if (this.isDragging) {
         e.preventDefault();
         this.currentX = deltaX;
-        const rotate = deltaX * 0.07;
-        card.style.transform = `translateX(${deltaX}px) rotate(${rotate}deg)`;
+        card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.07}deg)`;
 
-        if (deltaX > 35) {
-          card.style.boxShadow = '0 0 28px rgba(34, 197, 94, 0.45)';
-        } else if (deltaX < -35) {
-          card.style.boxShadow = '0 0 28px rgba(239, 68, 68, 0.45)';
-        } else {
-          card.style.boxShadow = '';
+        if (this.currentTab === 'study') {
+          if (deltaX > 35) card.style.boxShadow = '0 0 28px rgba(34,197,94,0.45)';
+          else if (deltaX < -35) card.style.boxShadow = '0 0 28px rgba(239,68,68,0.45)';
+          else card.style.boxShadow = '';
         }
       }
     }, { passive: false });
@@ -305,48 +299,15 @@ class KanjiApp {
 
       const threshold = 80;
 
-      if (this.currentX > threshold) {
-        this.markCard(true);
-      } else if (this.currentX < -threshold) {
-        this.markCard(false);
+      if (this.currentTab === 'study') {
+        if (this.currentX > threshold) this.markCard(true);
+        else if (this.currentX < -threshold) this.markCard(false);
+        else card.style.transform = '';
       } else {
-        card.style.transform = '';
+        if (this.currentX > threshold) this.reviewPrev();
+        else if (this.currentX < -threshold) this.reviewNext();
+        else card.style.transform = '';
       }
-
-      setTimeout(() => {
-        this.isDragging = false;
-      }, 40);
-    });
-
-    // Mouse support (desktop testing)
-    let mouseDown = false;
-    card.addEventListener('mousedown', (e) => {
-      mouseDown = true;
-      this.isDragging = false;
-      this.startX = e.clientX;
-      this.currentX = 0;
-      card.style.transition = 'none';
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!mouseDown) return;
-      const deltaX = e.clientX - this.startX;
-      if (Math.abs(deltaX) > 8) this.isDragging = true;
-      if (this.isDragging) {
-        this.currentX = deltaX;
-        const rotate = deltaX * 0.07;
-        card.style.transform = `translateX(${deltaX}px) rotate(${rotate}deg)`;
-      }
-    });
-
-    window.addEventListener('mouseup', () => {
-      if (!mouseDown) return;
-      mouseDown = false;
-      card.style.transition = 'transform 0.28s ease';
-
-      if (this.currentX > 80) this.markCard(true);
-      else if (this.currentX < -80) this.markCard(false);
-      else card.style.transform = '';
 
       setTimeout(() => { this.isDragging = false; }, 40);
     });

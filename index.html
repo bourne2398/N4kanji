@@ -17,7 +17,7 @@
     <!-- Header -->
     <header class="header" id="header">
       <div class="header-left">
-        <h1>N4</h1>
+        <h1 id="headerTitle">N4</h1>
         <span class="progress-text" id="progressText">0/0</span>
       </div>
       <div class="header-right">
@@ -30,7 +30,7 @@
       <div class="progress-fill" id="progressFill"></div>
     </div>
 
-    <!-- Main Study Area -->
+    <!-- Main Study / Review Area -->
     <main class="main" id="main">
       <div class="card-container" id="cardContainer">
         <div class="flashcard" id="flashcard">
@@ -59,9 +59,23 @@
         <button class="action-btn flip-btn" id="flipBtn" title="Flip">⟳</button>
         <button class="action-btn knew" id="knewBtn" title="Knew">✓</button>
       </div>
+
+      <!-- Review mode controls -->
+      <div class="review-controls hidden" id="reviewControls">
+        <button class="action-btn review-prev" id="prevBtn" title="Previous">‹</button>
+        <button class="action-btn flip-btn" id="reviewFlipBtn" title="Flip">⟳</button>
+        <button class="action-btn review-next" id="nextBtn" title="Next">›</button>
+        <button class="action-btn review-remove" id="removeBtn" title="Remove">🗑</button>
+      </div>
     </main>
 
-    <!-- Tabs (icon only) -->
+    <!-- Empty state for review tabs -->
+    <div class="empty-state-full hidden" id="emptyState">
+      <div class="empty-icon" id="emptyIcon">✓</div>
+      <p id="emptyText">No cards yet</p>
+    </div>
+
+    <!-- Tabs -->
     <nav class="tabs" id="tabs">
       <button class="tab active" data-tab="study" title="Study">
         <span class="tab-icon">🎴</span>
@@ -75,25 +89,6 @@
         <span class="badge" id="dontKnowBadge">0</span>
       </button>
     </nav>
-
-    <!-- List Views -->
-    <section class="list-view hidden" id="knewView">
-      <div class="list-header">
-        <h2>✓ Knew</h2>
-        <button class="clear-btn" data-clear="knew" title="Clear">🗑</button>
-      </div>
-      <div class="kanji-grid" id="knewGrid"></div>
-      <div class="empty-state" id="knewEmpty">Swipe right on cards you know</div>
-    </section>
-
-    <section class="list-view hidden" id="dontknowView">
-      <div class="list-header">
-        <h2>✕ Don't Know</h2>
-        <button class="clear-btn" data-clear="dontknow" title="Clear">🗑</button>
-      </div>
-      <div class="kanji-grid" id="dontKnowGrid"></div>
-      <div class="empty-state" id="dontKnowEmpty">Swipe left on cards you don't know</div>
-    </section>
   </div>
 
   <script src="data.js"></script>
