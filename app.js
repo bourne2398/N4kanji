@@ -190,6 +190,34 @@ class KanjiApp {
     this.flashcard.classList.toggle('flipped', this.isFlipped);
   }
 
+  speakCard() {
+    const card = this.getCurrentCard();
+    if (!card) return;
+
+    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+      alert('Audio pronunciation is not supported by this browser.');
+      return;
+    }
+
+    // Vocabulary cards use their supplied reading; single-kanji cards use the
+    // character itself so the device's Japanese voice can choose a reading.
+    const text = card.type === 'example' && card.reading
+      ? card.reading
+      : card.front;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ja-JP';
+    utterance.rate = 0.82;
+    utterance.pitch = 1;
+
+    const voices = window.speechSynthesis.getVoices();
+    const japaneseVoice = voices.find(voice => /^ja(-|_)/i.test(voice.lang));
+    if (japaneseVoice) utterance.voice = japaneseVoice;
+
+    window.speechSynthesis.speak(utterance);
+  }
+
   markCard(isKnew) {
     if (this.currentTab !== 'study') return;
     const card = this.getCurrentCard();
@@ -300,6 +328,8 @@ class KanjiApp {
 
     document.getElementById('flipBtn').addEventListener('click', () => this.flipCard());
     document.getElementById('reviewFlipBtn').addEventListener('click', () => this.flipCard());
+    document.getElementById('speakBtn').addEventListener('click', () => this.speakCard());
+    document.getElementById('reviewSpeakBtn').addEventListener('click', () => this.speakCard());
     document.getElementById('knewBtn').addEventListener('click', () => this.markCard(true));
     document.getElementById('dontKnowBtn').addEventListener('click', () => this.markCard(false));
     document.getElementById('nextBtn').addEventListener('click', () => this.reviewNext());
