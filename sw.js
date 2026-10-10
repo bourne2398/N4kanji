@@ -1,4 +1,4 @@
-const CACHE_NAME = 'n4-kanji-offline-v6';
+const CACHE_NAME = 'n4-kanji-offline-v7';
 const APP_SHELL = [
   './',
   './index.html',
