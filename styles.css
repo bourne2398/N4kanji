@@ -151,23 +151,54 @@ html, body {
 .card-back {
   transform: rotateY(180deg);
   background: linear-gradient(145deg, #1e293b, #162032);
-  padding: 14px 12px;
+  padding: 20px 16px;
   overflow-y: auto;
 }
 
-.kanji {
+.front-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+}
+
+.card-type {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.main-text {
   font-family: 'Noto Sans JP', sans-serif;
   font-weight: 900;
-  font-size: clamp(5.5rem, 26vw, 8.5rem);
-  line-height: 1;
+  font-size: clamp(4.5rem, 22vw, 7.5rem);
+  line-height: 1.1;
   color: #fff;
   text-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  text-align: center;
+  word-break: break-all;
+}
+
+.main-text.word {
+  font-size: clamp(2.2rem, 12vw, 3.8rem);
+  font-weight: 700;
+}
+
+.sub-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
 .back-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
   width: 100%;
   text-align: center;
 }
@@ -175,11 +206,11 @@ html, body {
 .reading-group {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .label {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   letter-spacing: 0.06em;
   color: var(--text-muted);
   font-weight: 600;
@@ -187,52 +218,31 @@ html, body {
 
 .reading {
   font-family: 'Noto Sans JP', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--accent);
 }
 
 .meaning {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--text);
-  line-height: 1.25;
+  line-height: 1.3;
+  margin-top: 4px;
 }
 
-/* Examples */
-.examples {
-  margin-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-}
-
-.example-item {
-  background: rgba(255,255,255,0.05);
-  border-radius: 8px;
-  padding: 6px 8px;
+.parent-kanji {
+  margin-top: 10px;
   font-size: 0.8rem;
-  line-height: 1.35;
+  color: var(--text-muted);
 }
 
-.example-word {
+.parent-kanji span {
   font-family: 'Noto Sans JP', sans-serif;
   font-weight: 700;
-  color: #e2e8f0;
-}
-
-.example-reading {
+  font-size: 1.1rem;
   color: var(--accent);
-  font-size: 0.72rem;
   margin-left: 4px;
-}
-
-.example-meaning {
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  display: block;
-  margin-top: 1px;
 }
 
 /* ===== Actions ===== */
@@ -400,8 +410,12 @@ html, body {
     border: none;
   }
 
-  .kanji {
-    font-size: clamp(7rem, 32vw, 14rem);
+  .main-text {
+    font-size: clamp(6rem, 28vw, 12rem);
+  }
+
+  .main-text.word {
+    font-size: clamp(3rem, 14vw, 5rem);
   }
 }
 
