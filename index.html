@@ -32,20 +32,24 @@
       <div class="card-container" id="cardContainer">
         <div class="flashcard" id="flashcard">
           <div class="card-face card-front">
-            <div class="kanji" id="kanjiChar">漢</div>
+            <div class="front-content">
+              <div class="card-type" id="cardType"></div>
+              <div class="main-text" id="mainText">漢</div>
+              <div class="sub-text" id="subText"></div>
+            </div>
           </div>
           <div class="card-face card-back">
             <div class="back-content">
               <div class="reading-group">
-                <span class="label">音</span>
-                <span class="reading" id="onyomi">—</span>
+                <span class="label" id="backLabel1">音</span>
+                <span class="reading" id="backVal1">—</span>
               </div>
               <div class="reading-group">
-                <span class="label">訓</span>
-                <span class="reading" id="kunyomi">—</span>
+                <span class="label" id="backLabel2">訓</span>
+                <span class="reading" id="backVal2">—</span>
               </div>
-              <div class="meaning" id="meaning">—</div>
-              <div class="examples" id="examples"></div>
+              <div class="meaning" id="backMeaning">—</div>
+              <div class="parent-kanji" id="parentKanji"></div>
             </div>
           </div>
         </div>

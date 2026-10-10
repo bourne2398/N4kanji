@@ -1,10 +1,10 @@
-// ===== N4 Kanji Flashcards App =====
+// ===== N4 Kanji + Example Flashcards =====
 
-const STORAGE_KEY = 'n4_kanji_progress_v1';
+const STORAGE_KEY = 'n4_kanji_progress_v2';
 
 class KanjiApp {
   constructor() {
-    this.allKanji = [...KANJI_DATA];
+    this.allCards = this.buildAllCards();
     this.deck = [];
     this.currentIndex = 0;
     this.knew = new Set();
@@ -25,12 +25,48 @@ class KanjiApp {
     this.updateUI();
   }
 
+  buildAllCards() {
+    const cards = [];
+
+    KANJI_DATA.forEach(k => {
+      cards.push({
+        id: `k-${k.kanji}`,
+        type: 'kanji',
+        front: k.kanji,
+        onyomi: k.onyomi,
+        kunyomi: k.kunyomi,
+        meaning: k.english,
+        parent: null
+      });
+
+      if (k.examples && k.examples.length) {
+        k.examples.forEach((ex, i) => {
+          cards.push({
+            id: `e-${k.kanji}-${i}`,
+            type: 'example',
+            front: ex.word,
+            reading: ex.reading,
+            meaning: ex.meaning,
+            parent: k.kanji
+          });
+        });
+      }
+    });
+
+    return cards;
+  }
+
   cacheDOM() {
     this.flashcard = document.getElementById('flashcard');
-    this.kanjiChar = document.getElementById('kanjiChar');
-    this.onyomiEl = document.getElementById('onyomi');
-    this.kunyomiEl = document.getElementById('kunyomi');
-    this.meaningEl = document.getElementById('meaning');
+    this.cardType = document.getElementById('cardType');
+    this.mainText = document.getElementById('mainText');
+    this.subText = document.getElementById('subText');
+    this.backLabel1 = document.getElementById('backLabel1');
+    this.backVal1 = document.getElementById('backVal1');
+    this.backLabel2 = document.getElementById('backLabel2');
+    this.backVal2 = document.getElementById('backVal2');
+    this.backMeaning = document.getElementById('backMeaning');
+    this.parentKanji = document.getElementById('parentKanji');
     this.progressText = document.getElementById('progressText');
     this.progressFill = document.getElementById('progressFill');
     this.headerTitle = document.getElementById('headerTitle');
@@ -64,8 +100,8 @@ class KanjiApp {
   }
 
   buildDeck() {
-    this.deck = this.allKanji.filter(k =>
-      !this.knew.has(k.kanji) && !this.dontKnow.has(k.kanji)
+    this.deck = this.allCards.filter(c =>
+      !this.knew.has(c.id) && !this.dontKnow.has(c.id)
     );
     for (let i = this.deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -88,10 +124,16 @@ class KanjiApp {
       if (this.currentTab === 'study') {
         this.main.classList.remove('hidden');
         this.emptyState.classList.add('hidden');
-        this.kanjiChar.textContent = '完';
-        this.onyomiEl.textContent = 'Done!';
-        this.kunyomiEl.textContent = '';
-        this.meaningEl.textContent = 'Reset to study again';
+        this.cardType.textContent = '';
+        this.mainText.textContent = '完';
+        this.mainText.classList.remove('word');
+        this.subText.textContent = '';
+        this.backLabel1.textContent = '';
+        this.backVal1.textContent = 'Done!';
+        this.backLabel2.textContent = '';
+        this.backVal2.textContent = '';
+        this.backMeaning.textContent = 'Reset to study again';
+        this.parentKanji.innerHTML = '';
       } else {
         this.main.classList.add('hidden');
         this.emptyState.classList.remove('hidden');
@@ -108,25 +150,32 @@ class KanjiApp {
     this.main.classList.remove('hidden');
     this.emptyState.classList.add('hidden');
 
-    this.kanjiChar.textContent = card.kanji;
-    this.onyomiEl.textContent = card.onyomi;
-    this.kunyomiEl.textContent = card.kunyomi === '—' ? '—' : card.kunyomi;
-    this.meaningEl.textContent = card.english;
+    if (card.type === 'kanji') {
+      this.cardType.textContent = 'KANJI';
+      this.mainText.textContent = card.front;
+      this.mainText.classList.remove('word');
+      this.subText.textContent = '';
 
-    // Render examples
-    const examplesEl = document.getElementById('examples');
-    if (examplesEl) {
-      if (card.examples && card.examples.length) {
-        examplesEl.innerHTML = card.examples.map(ex => `
-          <div class="example-item">
-            <span class="example-word">${ex.word}</span>
-            <span class="example-reading">${ex.reading}</span>
-            <span class="example-meaning">${ex.meaning}</span>
-          </div>
-        `).join('');
-      } else {
-        examplesEl.innerHTML = '';
-      }
+      this.backLabel1.textContent = '音';
+      this.backVal1.textContent = card.onyomi;
+      this.backLabel2.textContent = '訓';
+      this.backVal2.textContent = card.kunyomi === '—' ? '—' : card.kunyomi;
+      this.backMeaning.textContent = card.meaning;
+      this.parentKanji.innerHTML = '';
+    } else {
+      this.cardType.textContent = 'WORD';
+      this.mainText.textContent = card.front;
+      this.mainText.classList.add('word');
+      this.subText.textContent = '';
+
+      this.backLabel1.textContent = '読み';
+      this.backVal1.textContent = card.reading;
+      this.backLabel2.textContent = '';
+      this.backVal2.textContent = '';
+      this.backMeaning.textContent = card.meaning;
+      this.parentKanji.innerHTML = card.parent
+        ? `from <span>${card.parent}</span>`
+        : '';
     }
 
     this.flashcard.classList.remove('flipped', 'slide-left', 'slide-right');
@@ -146,13 +195,12 @@ class KanjiApp {
     const card = this.getCurrentCard();
     if (!card) return;
 
-    const k = card.kanji;
     if (isKnew) {
-      this.knew.add(k);
-      this.dontKnow.delete(k);
+      this.knew.add(card.id);
+      this.dontKnow.delete(card.id);
     } else {
-      this.dontKnow.add(k);
-      this.knew.delete(k);
+      this.dontKnow.add(card.id);
+      this.knew.delete(card.id);
     }
     this.saveProgress();
     this.updateUI();
@@ -183,8 +231,8 @@ class KanjiApp {
     const card = this.getCurrentCard();
     if (!card) return;
 
-    if (this.currentTab === 'knew') this.knew.delete(card.kanji);
-    else this.dontKnow.delete(card.kanji);
+    if (this.currentTab === 'knew') this.knew.delete(card.id);
+    else this.dontKnow.delete(card.id);
 
     this.saveProgress();
     this.buildReviewList();
@@ -200,15 +248,15 @@ class KanjiApp {
 
   buildReviewList() {
     const set = this.currentTab === 'knew' ? this.knew : this.dontKnow;
-    this.reviewList = this.allKanji.filter(k => set.has(k.kanji));
+    this.reviewList = this.allCards.filter(c => set.has(c.id));
     if (this.reviewIndex >= this.reviewList.length) this.reviewIndex = 0;
   }
 
   updateProgressText() {
     if (this.currentTab === 'study') {
       const done = this.knew.size + this.dontKnow.size;
-      this.progressText.textContent = `${done}/${this.allKanji.length}`;
-      this.progressFill.style.width = `${(done / this.allKanji.length) * 100}%`;
+      this.progressText.textContent = `${done}/${this.allCards.length}`;
+      this.progressFill.style.width = `${(done / this.allCards.length) * 100}%`;
     } else {
       const total = this.reviewList.length;
       const pos = total === 0 ? 0 : this.reviewIndex + 1;
