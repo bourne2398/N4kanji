@@ -1,1 +1,1 @@
-// Temporary - full data is in local artifacts. Please refresh after next update.
+LOCAL_FILE_CONTENT_PLACEHOLDER
