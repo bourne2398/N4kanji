@@ -1,4 +1,4 @@
-const CACHE_NAME = 'n4-kanji-offline-v8';
+const CACHE_NAME = 'n4-kanji-offline-v9';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './data.js',
   './manifest.json',
   './icon-192.png',
+  './icon-192.svg',
   './icon-512.svg'
 ];
 
