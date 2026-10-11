@@ -2,7 +2,7 @@
   "name": "N4 Kanji Flashcards",
   "short_name": "N4 Kanji",
   "description": "JLPT N4 Kanji Flashcards that work offline after the first successful visit.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -21,5 +21,6 @@
       "type": "image/svg+xml",
       "purpose": "any"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
