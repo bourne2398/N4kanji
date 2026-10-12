@@ -16,6 +16,8 @@ class KanjiApp {
     this.currentTab = 'study';
     this.reviewList = [];
     this.reviewIndex = 0;
+    this.lastShakeAt = 0;
+    this.shakeSamples = [];
 
     this.cacheDOM();
     this.loadProgress();
@@ -97,6 +99,50 @@ class KanjiApp {
       knew: [...this.knew],
       dontKnow: [...this.dontKnow]
     }));
+  }
+
+  resetAllProgress(source = 'button') {
+    const overlay = document.getElementById('resetAnimation');
+    if (overlay) {
+      overlay.classList.remove('play');
+      void overlay.offsetWidth;
+      overlay.classList.add('play');
+    }
+    this.knew.clear();
+    this.dontKnow.clear();
+    this.reviewList = [];
+    this.reviewIndex = 0;
+    this.currentTab = 'study';
+    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+    this.saveProgress();
+    this.buildDeck();
+    this.switchTab('study');
+    if (source === 'shake') {
+      const notice = document.getElementById('resetNotice');
+      if (notice) {
+        notice.textContent = 'Progress reset';
+        notice.classList.remove('show');
+        void notice.offsetWidth;
+        notice.classList.add('show');
+      }
+    }
+  }
+
+  handleMotion(event) {
+    const a = event.accelerationIncludingGravity || event.acceleration;
+    if (!a || a.x == null || a.y == null || a.z == null) return;
+    const now = Date.now();
+    const magnitude = Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
+    this.shakeSamples.push({ t: now, m: magnitude });
+    this.shakeSamples = this.shakeSamples.filter(s => now - s.t < 450);
+    const spread = this.shakeSamples.length > 1
+      ? Math.max(...this.shakeSamples.map(s => s.m)) - Math.min(...this.shakeSamples.map(s => s.m))
+      : 0;
+    if (this.shakeSamples.length >= 4 && spread > 17 && now - this.lastShakeAt > 2500) {
+      this.lastShakeAt = now;
+      this.shakeSamples = [];
+      this.resetAllProgress('shake');
+    }
   }
 
   buildDeck() {
@@ -337,14 +383,13 @@ class KanjiApp {
     document.getElementById('removeBtn').addEventListener('click', () => this.removeFromReview());
 
     document.getElementById('resetBtn').addEventListener('click', () => {
-      if (confirm('Reset all progress?')) {
-        this.knew.clear();
-        this.dontKnow.clear();
-        this.saveProgress();
-        this.buildDeck();
-        this.switchTab('study');
-      }
+      if (confirm('Reset all progress?')) this.resetAllProgress('button');
     });
+
+    // Device motion is available on HTTPS Android browsers without a permission prompt.
+    if ('DeviceMotionEvent' in window) {
+      window.addEventListener('devicemotion', (event) => this.handleMotion(event), { passive: true });
+    }
 
     this.tabs.forEach(tab => {
       tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
