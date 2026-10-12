@@ -436,3 +436,26 @@ html, body {
 }
 .flashcard.slide-right { animation: slideOutRight 0.32s forwards; }
 .flashcard.slide-left { animation: slideOutLeft 0.32s forwards; }
+
+
+/* Reset animation: a short pulse/shimmer confirms the shake gesture. */
+.reset-animation {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
+  background: rgba(8, 15, 30, 0.0); opacity: 0; pointer-events: none;
+}
+.reset-animation.play { animation: reset-overlay 900ms ease-out both; }
+.reset-orbit {
+  width: 112px; height: 112px; border: 3px solid var(--accent); border-radius: 50%;
+  display: grid; place-items: center; color: white; font-size: 2.8rem; font-weight: 900;
+  background: rgba(15,23,42,.96); box-shadow: 0 0 0 0 rgba(56,189,248,.45);
+}
+.reset-animation.play .reset-orbit { animation: reset-orbit 900ms cubic-bezier(.2,.8,.2,1) both; }
+.reset-notice { position: fixed; z-index: 110; left: 50%; bottom: calc(88px + var(--safe-bottom));
+  transform: translate(-50%, 12px); opacity: 0; pointer-events: none; background: #1e293b;
+  border: 1px solid rgba(56,189,248,.6); color: #f8fafc; padding: 10px 16px; border-radius: 999px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.35); white-space: nowrap; }
+.reset-notice.show { animation: notice-in 1.8s ease both; }
+@keyframes reset-overlay { 0%{opacity:0;background:rgba(8,15,30,0)} 15%{opacity:1;background:rgba(8,15,30,.72)} 75%{opacity:1;background:rgba(8,15,30,.55)} 100%{opacity:0;background:rgba(8,15,30,0)} }
+@keyframes reset-orbit { 0%{transform:scale(.35) rotate(-90deg);opacity:0} 30%{transform:scale(1.08) rotate(15deg);opacity:1} 65%{transform:scale(.96) rotate(0);box-shadow:0 0 0 22px rgba(56,189,248,0)} 100%{transform:scale(.8);opacity:0} }
+@keyframes notice-in { 0%,100%{opacity:0;transform:translate(-50%,12px)} 12%,75%{opacity:1;transform:translate(-50%,0)} }
+@media (prefers-reduced-motion: reduce) { .reset-animation.play, .reset-animation.play .reset-orbit, .reset-notice.show { animation-duration: 1ms; } }
